@@ -1,0 +1,163 @@
+/*
+GAME RULES:
+
+- The game has 2 players, playing in rounds
+- In each turn, a player rolls a dice as many times as he whishes. Each result get added to his ROUND score
+- BUT, if the player rolls a 1, all his ROUND score gets lost. After that, it's the next player's turn
+- The player can choose to 'Hold', which means that his ROUND score gets added to his GLBAL score. After that, it's the next player's turn
+- The first player to reach 100 points on GLOBAL score wins the game
+
+*/
+
+var scores, roundScores, activePlayer, gamePlaying, diceValue, rollCount;
+
+init();
+
+//dice = Math.floor(Math.random() * 6) + 1; // random whole number from 1 to 6
+
+// DOM Manipulation
+//document.querySelector('#current-' + activePlayer).textContent = dice; // Lets us collect stuff just as we do in CSS. only collects first element it finds (There is a solution for this).  This also allows the page to change using the method shown without looking in the console!!! //textContent only sets plain text, no HTML!!! //querySelector method changes values in elements in web page
+
+//document.querySelector('#current-' + activePlayer).innerHTML = '<em>'; //this is to write HTML which needs to be written in a string (<em> emphasizes the text... making it italic font)
+
+//var x = document.querySelector('#score-0').textContent; //this can read a variable on the page... a "getter"
+//console.log(x);
+
+
+/*
+function btn() {
+    //Do something here
+}
+btn(); //calls a function
+
+
+document.querySelector('.btn-roll').addEventListener('click', btn); //eventListener then add the event type 'click' in this case.  A ref to all event types are on the MDN event reference page. The second part is the function when the event happens... we add it as a callback function where it's not called by us but another function. If you write a function in the function slot then it can only be used once. this is called an anonymous function as it has no name (shown below)
+*/
+
+document.querySelector('.btn-roll').addEventListener('click', function() {
+    if (gamePlaying) {
+        //1. Random Number
+        var dice = Math.floor(Math.random() * 6) + 1; //define var in function only because we don't need it on the outside due to scoping chain. We still have access to outer scope in this function tho
+        
+        //2. Display the result
+        var diceDOM = document.querySelector('.dice');
+        diceDOM.style.display = 'block'; //Make it visible again due to up above
+        diceDOM.src = 'dice-' + dice + '.png'; //changes the source attribute
+        
+        //3. Update the round score If the rolled number was NOT a 1
+        rollCount += 1;
+        if (rollCount === 1) {
+            diceValue[1] = dice;
+        } else {
+            diceValue[0] = diceValue[1];
+            diceValue[1] = dice;
+        }
+        
+        if (dice !== 1) { //!== is "different than" and == doesn't perform type coercion while = does (always use ==)
+            //add score
+            roundScore += dice; //roundScore = roundScore + dice;
+            document.querySelector('#current-' + activePlayer).textContent = roundScore;
+            
+            if (diceValue[0] === 6 && diceValue[1] === 6) {
+                document.getElementById('score-' + activePlayer).textContent = '0'; //changes html score for player to 0
+                diceValue = [0,0]; // sets dice counter to zero
+                scores[activePlayer] = 0; //sets the behind the scene score to 0
+                nextPlayer(); // changes to next player
+            }
+            
+        } else {
+            //Next player
+            nextPlayer();
+        }
+    }
+    
+});
+
+//Hold point function
+document.querySelector('.btn-hold').addEventListener('click', function() {
+    if (gamePlaying) {
+        //Add current score to global score
+        scores[activePlayer] += roundScore; //scores[activePlayer] = scores[activePlayer] + roundScore;
+        
+        //Update the UI (User Interface)
+        document.querySelector('#score-' + activePlayer).textContent = scores[activePlayer];
+        
+        //Check if player won game
+        if (scores[activePlayer] >= 100) {
+            document.querySelector('#name-' + activePlayer).textContent = 'Winner!';
+            document.querySelector('.dice').style.display = 'none'; //don't use style property all the time to manipulate CSS
+            document.querySelector('.player-' + activePlayer + '-panel').classList.add('winner');
+            document.querySelector('.player-' + activePlayer + '-panel').classList.remove('active');
+            //Set gamePlaying to false
+            gamePlaying = false;
+        } else {
+            //Next player
+            diceValue = [0,0]; // sets dice counter to zero
+            nextPlayer();
+        }
+    }
+    
+})
+
+
+function nextPlayer() { //DRY principal, we do this to not repeat ourself
+    activePlayer === 0 ? activePlayer = 1 : activePlayer = 0; //ternary operator
+    roundScore = 0; //allows round score to start over
+    //Set current values to zero when a 1 is hit
+    document.getElementById('current-0').textContent = '0';
+    document.getElementById('current-1').textContent = '0';
+    
+    //Switch active player indicator
+    //document.querySelector('.player-0-panel').classList.remove('active');
+    //document.querySelector('.player-1-panel').classList.add('active');
+    document.querySelector('.player-0-panel').classList.toggle('active'); //toggle will remove or add depending if the class is there or not
+    document.querySelector('.player-1-panel').classList.toggle('active');
+    
+    //Make dice go away when a 1 and 6 are rolled
+    document.querySelector('.dice').style.display = 'none';
+}
+
+document.querySelector('.btn-new').addEventListener('click', init); //don't add () at end of function as we don't want it immediately called
+
+function init() {
+    rollCount = 0;
+    diceValue = [0,0];
+    scores = [0,0];
+    activePlayer = 0;
+    roundScore = 0;
+    gamePlaying = true;
+    
+    document.querySelector('.dice').style.display = 'none'; //use style method then put CSS property we want to change... in this case the display property to nothing when we open the page so we don't see the dice at first
+    document.getElementById('score-0').textContent = '0'; //sets everything to zero without touching the HTML
+    document.getElementById('score-1').textContent = '0';
+    document.getElementById('current-0').textContent = '0';
+    document.getElementById('current-1').textContent = '0';
+    
+    //Change back player names
+    document.getElementById('name-0').textContent = 'Player 1';
+    document.getElementById('name-1').textContent = 'Player 2';
+    
+    //Remove winner class
+    document.querySelector('.player-0-panel').classList.remove('winner');
+    document.querySelector('.player-1-panel').classList.remove('winner');
+    //Remove active player status
+    document.querySelector('.player-0-panel').classList.remove('active');
+    document.querySelector('.player-1-panel').classList.remove('active');
+    //Set first player to active player
+    document.querySelector('.player-0-panel').classList.add('active');
+}
+
+
+
+
+
+
+/*
+YOUR 3 CHALLENGES
+Change the game to follow these rules:
+
+1. A player looses his ENTIRE score when he rolls two 6 in a row. After that, it's the next player's turn. (Hint: Always save the previous dice roll in a separate variable)
+2. Add an input field to the HTML where players can set the winning score, so that they can change the predefined score of 100. (Hint: you can read that value with the .value property in JavaScript. This is a good oportunity to use google to figure this out :)
+3. Add another dice to the game, so that there are two dices now. The player looses his current score when one of them is a 1. (Hint: you will need CSS to position the second dice, so take a look at the CSS code for the first one.)
+*/
+
